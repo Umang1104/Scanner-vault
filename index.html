@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scanner Vault – Secure Document Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-logo" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 001 1h8a1 1 0 001-1l1-12M9 7V4h6v3"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 00-1 1v14a1 1 0 001 1h4M16 8l4 4-4 4M20 12H9"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a1 1 0 00-1 1v16a1 1 0 001 1h10a1 1 0 001-1V7z"/><path d="M14 3v4h4"/></symbol>
+</svg>
+
+<!-- ============ AUTH ============ -->
+<section id="authView" class="auth" hidden>
+  <div class="auth-brand">
+    <div class="brand"><svg class="i"><use href="#i-logo"/></svg>Scanner Vault</div>
+    <div>
+      <h1>Every important document, one secure place.</h1>
+      <ul class="points">
+        <li>Upload PDFs, photos and scanned receipts</li>
+        <li>Organise with categories and tags</li>
+        <li>Find anything in seconds with instant search</li>
+      </ul>
+    </div>
+    <p class="fine">Your documents stay in this browser's local storage.</p>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="login" role="tab">Log in</button>
+        <button class="tab" data-tab="signup" role="tab">Create account</button>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <h2>Welcome back</h2>
+        <p class="sub">Log in to open your vault.</p>
+        <label class="field">Email<input type="email" name="email" autocomplete="email" placeholder="you@example.com" required></label>
+        <label class="field">Password<input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required></label>
+        <p class="err" id="loginErr" role="alert"></p>
+        <button class="btn primary block" type="submit">Log in</button>
+        <p class="switch">New here? <button type="button" class="link" data-tab="signup">Create an account</button></p>
+      </form>
+
+      <form id="signupForm" novalidate hidden>
+        <h2>Create your account</h2>
+        <p class="sub">It takes less than a minute.</p>
+        <label class="field">Full name<input type="text" name="fullName" autocomplete="name" placeholder="Aarav Sharma" required></label>
+        <label class="field">Email<input type="email" name="email" autocomplete="email" placeholder="you@example.com" required></label>
+        <label class="field">Password<input type="password" name="password" autocomplete="new-password" placeholder="At least 8 characters" required></label>
+        <label class="field">Confirm password<input type="password" name="confirm" autocomplete="new-password" placeholder="Re-enter your password" required></label>
+        <p class="err" id="signupErr" role="alert"></p>
+        <button class="btn primary block" type="submit">Create account</button>
+        <p class="switch">Already registered? <button type="button" class="link" data-tab="login">Log in</button></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="appView" class="app" hidden>
+  <header class="topbar">
+    <div class="brand"><svg class="i"><use href="#i-logo"/></svg>Scanner Vault</div>
+    <div class="search">
+      <svg class="i"><use href="#i-search"/></svg>
+      <input id="search" type="search" placeholder="Search by title, tag or date" autocomplete="off" aria-label="Search documents">
+      <ul id="suggest" class="suggest" hidden></ul>
+    </div>
+    <div class="user">
+      <span class="avatar" id="avatar"></span>
+      <span id="userName" class="uname"></span>
+      <button class="btn ghost" id="logoutBtn"><svg class="i"><use href="#i-logout"/></svg><span>Log out</span></button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="side">
+      <nav id="cats" aria-label="Categories"></nav>
+      <div class="meter">
+        <div class="meter-row"><span>Storage</span><span id="meterText"></span></div>
+        <div class="bar"><i id="meterBar"></i></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="stats" id="stats"></div>
+      <div class="toolbar">
+        <h2 id="listTitle">All documents</h2>
+        <select id="sort" aria-label="Sort documents">
+          <option value="new">Newest first</option>
+          <option value="old">Oldest first</option>
+          <option value="name">Name A–Z</option>
+          <option value="size">Largest first</option>
+        </select>
+        <button class="btn primary" id="addBtn"><svg class="i"><use href="#i-upload"/></svg>Upload document</button>
+      </div>
+      <div id="grid" class="grid"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Upload / edit modal -->
+<dialog id="docModal">
+  <form id="docForm" novalidate>
+    <div class="dlg-head"><h3 id="docModalTitle">Upload document</h3><button type="button" class="x" data-close aria-label="Close">&times;</button></div>
+    <div class="dlg-body">
+      <label class="drop" id="drop">
+        <input type="file" id="fileInput" name="file" accept="application/pdf,image/*" hidden>
+        <svg class="i big"><use href="#i-upload"/></svg>
+        <strong>Click to choose a file</strong><span>or drag and drop it here</span>
+        <small>PDF, PNG or JPG, up to 1.5 MB</small>
+        <em id="fileName"></em>
+      </label>
+      <label class="field">Title<input type="text" name="title" maxlength="80" placeholder="e.g. Income tax return 2025" required></label>
+      <label class="field">Category<select name="category"></select></label>
+      <label class="field">Tags<input type="text" name="tags" placeholder="Separate with commas, e.g. 2025, hospital"></label>
+      <p class="err" id="docErr" role="alert"></p>
+    </div>
+    <div class="dlg-foot"><button type="button" class="btn ghost" data-close>Cancel</button><button type="submit" class="btn primary" id="docSave">Save document</button></div>
+  </form>
+</dialog>
+
+<!-- Preview modal -->
+<dialog id="viewModal" class="wide">
+  <div class="dlg-head"><h3 id="viewTitle"></h3><button type="button" class="x" data-close aria-label="Close">&times;</button></div>
+  <div class="dlg-body preview" id="viewBody"></div>
+  <div class="dlg-foot"><a class="btn primary" id="viewDl"><svg class="i"><use href="#i-download"/></svg>Download</a></div>
+</dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>
